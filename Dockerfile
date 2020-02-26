@@ -1,5 +1,5 @@
 FROM  azul/zulu-openjdk-alpine:11
-LABEL maintainer="Harry Laoulakos <harry@talos.software>"
+LABEL maintainer="harry@talos.software"
 ENV SCALA_VERSION=2.13.1 \
   SCALA_HOME=/usr/share/scala \
   SBT_VERSION=1.3.8
