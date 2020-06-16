@@ -1,8 +1,8 @@
 FROM  azul/zulu-openjdk-alpine:11
 LABEL maintainer="harry@talos.software"
-ENV SCALA_VERSION=2.13.1 \
+ENV SCALA_VERSION=2.13.2 \
   SCALA_HOME=/usr/share/scala \
-  SBT_VERSION=1.3.8
+  SBT_VERSION=1.3.12
 
 RUN \
   apk add --no-cache --virtual=.build-dependencies wget ca-certificates && \
