@@ -13,8 +13,8 @@ A minimal sbt alpine docker image based on  and [azul/zulu-openjdk-alpine:11](ht
 current environment parameters (can be configured)
 
 ```dockerfile
-SCALA_VERSION=2.13.2
-SBT_VERSION=1.3.12
+SCALA_VERSION=2.13.4
+SBT_VERSION=1.4.6
 ```
 
 
