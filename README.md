@@ -16,3 +16,22 @@ current environment parameters (can be configured)
 SCALA_VERSION=2.13.12
 SBT_VERSION=1.9.8
 ```
+
+
+
+## Build 
+
+```shell
+docker build --platform linux/amd64 --tag=harrylaou/scala-sbt-zulu-openjdk-alpine:xxx .
+```
+
+`--platform linux/amd64` is necessary to build the correct version to be run for gitlab ci
+
+```shell
+docker push harrylaou/scala-sbt-zulu-openjdk-alpine:xxx
+```
+
+
+
+
+
