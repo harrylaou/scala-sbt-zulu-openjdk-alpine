@@ -8,13 +8,13 @@ Scala sbt and zulu-openjdk-alpine
 
 # scala-sbt-zulu-openjdk-alpine
 
-A minimal sbt alpine docker image based on  and [azul/zulu-openjdk-alpine:11](https://hub.docker.com/r/azul/zulu-openjdk-alpine/tags?page=1&name=11)
+A minimal sbt alpine docker image based on  and [azul/zulu-openjdk-alpine:17](https://hub.docker.com/r/azul/zulu-openjdk-alpine/tags?page=1&name=11)
 
 current environment parameters (can be configured)
 
 ```dockerfile
-SCALA_VERSION=2.13.4
-SBT_VERSION=1.4.6
+SCALA_VERSION=2.13.12
+SBT_VERSION=1.9.8
 ```
 
 
