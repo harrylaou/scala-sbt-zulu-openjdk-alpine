@@ -16,11 +16,3 @@ current environment parameters (can be configured)
 SCALA_VERSION=2.13.12
 SBT_VERSION=1.9.8
 ```
-
-
-
-
-
-
-Download size of this image is:
-[![](https://images.microbadger.com/badges/image/harrylaou/scala-sbt-zulu-openjdk-alpine.svg)](https://microbadger.com/images/harrylaou/scala-sbt-zulu-openjdk-alpine "Get your own image badge on microbadger.com")
