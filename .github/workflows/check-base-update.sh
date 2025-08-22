@@ -14,7 +14,7 @@ echo "----------------------------------------"
 
 # Get the current base image digest
 echo "Fetching current base image digest..."
-BASE_DIGEST=$(docker manifest inspect "$BASE_IMAGE" --verbose | jq -r '.Descriptor.digest')
+BASE_DIGEST=$(docker manifest inspect "$BASE_IMAGE" | jq -r '.digest')
 echo "Current base image digest: $BASE_DIGEST"
 
 # Check if our image exists

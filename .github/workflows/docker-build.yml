@@ -31,7 +31,7 @@ jobs:
         id: check
         run: |
           # Get the current base image digest
-          BASE_DIGEST=$(docker manifest inspect ${{ env.BASE_IMAGE }} --verbose | jq -r '.Descriptor.digest')
+          BASE_DIGEST=$(docker manifest inspect ${{ env.BASE_IMAGE }} | jq -r '.digest')
           echo "base-digest=$BASE_DIGEST" >> $GITHUB_OUTPUT
           echo "Current base image digest: $BASE_DIGEST"
           
