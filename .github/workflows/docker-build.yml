@@ -1,0 +1,123 @@
+name: Build and Push Docker Image
+
+on:
+  schedule:
+    # Run daily at 2 AM UTC
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+    # Allow manual trigger
+  push:
+    branches:
+      - master
+    paths:
+      - 'Dockerfile'
+      - '.github/workflows/docker-build.yml'
+
+env:
+  IMAGE_NAME: harrylaou/scala-sbt-zulu-openjdk-alpine
+  BASE_IMAGE: azul/zulu-openjdk-alpine:17
+
+jobs:
+  check-base-image:
+    runs-on: ubuntu-latest
+    outputs:
+      should-build: ${{ steps.check.outputs.should-build }}
+      base-digest: ${{ steps.check.outputs.base-digest }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Check if base image has been updated
+        id: check
+        run: |
+          # Get the current base image digest
+          BASE_DIGEST=$(docker manifest inspect ${{ env.BASE_IMAGE }} --verbose | jq -r '.Descriptor.digest')
+          echo "base-digest=$BASE_DIGEST" >> $GITHUB_OUTPUT
+          echo "Current base image digest: $BASE_DIGEST"
+          
+          # Check if our image exists and get its base image digest
+          if docker manifest inspect ${{ env.IMAGE_NAME }}:latest >/dev/null 2>&1; then
+            # Get the labels from our current image to find the base digest used
+            CURRENT_BASE_DIGEST=$(docker inspect ${{ env.IMAGE_NAME }}:latest 2>/dev/null | jq -r '.[0].Config.Labels["base-image-digest"] // empty' || echo "")
+            echo "Current image base digest: $CURRENT_BASE_DIGEST"
+            
+            if [ "$BASE_DIGEST" != "$CURRENT_BASE_DIGEST" ] || [ -z "$CURRENT_BASE_DIGEST" ]; then
+              echo "Base image has been updated or digest label missing. Should build."
+              echo "should-build=true" >> $GITHUB_OUTPUT
+            else
+              echo "Base image hasn't changed. Checking if forced..."
+              if [ "${{ github.event_name }}" = "workflow_dispatch" ] || [ "${{ github.event_name }}" = "push" ]; then
+                echo "Manual trigger or code push detected. Should build."
+                echo "should-build=true" >> $GITHUB_OUTPUT
+              else
+                echo "No changes detected. Skipping build."
+                echo "should-build=false" >> $GITHUB_OUTPUT
+              fi
+            fi
+          else
+            echo "Image doesn't exist. Should build."
+            echo "should-build=true" >> $GITHUB_OUTPUT
+          fi
+
+  build-and-push:
+    needs: check-base-image
+    runs-on: ubuntu-latest
+    if: needs.check-base-image.outputs.should-build == 'true'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_TOKEN }}
+
+      - name: Extract version information
+        id: versions
+        run: |
+          SCALA_VERSION=$(grep 'SCALA_VERSION=' Dockerfile | head -1 | cut -d'=' -f2 | tr -d ' \\')
+          SBT_VERSION=$(grep 'SBT_VERSION=' Dockerfile | head -1 | cut -d'=' -f2 | tr -d ' \\')
+          DATE_TAG=$(date +%Y-%m-%d)
+          echo "scala-version=$SCALA_VERSION" >> $GITHUB_OUTPUT
+          echo "sbt-version=$SBT_VERSION" >> $GITHUB_OUTPUT
+          echo "date-tag=$DATE_TAG" >> $GITHUB_OUTPUT
+          echo "version-tag=$SCALA_VERSION-$SBT_VERSION" >> $GITHUB_OUTPUT
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          labels: |
+            base-image-digest=${{ needs.check-base-image.outputs.base-digest }}
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+            org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.created=${{ github.event.head_commit.timestamp }}
+          tags: |
+            ${{ env.IMAGE_NAME }}:latest
+            ${{ env.IMAGE_NAME }}:${{ steps.versions.outputs.date-tag }}
+            ${{ env.IMAGE_NAME }}:${{ steps.versions.outputs.version-tag }}
+            ${{ env.IMAGE_NAME }}:${{ steps.versions.outputs.version-tag }}-${{ steps.versions.outputs.date-tag }}
+
+      - name: Update repository description
+        uses: peter-evans/dockerhub-description@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_TOKEN }}
+          repository: ${{ env.IMAGE_NAME }}
+          readme-filepath: ./README.md
+
+  notify-skip:
+    needs: check-base-image
+    runs-on: ubuntu-latest
+    if: needs.check-base-image.outputs.should-build == 'false'
+    steps:
+      - name: Log skip reason
+        run: |
+          echo "Skipping build - no changes detected in base image"
+          echo "Base image digest: ${{ needs.check-base-image.outputs.base-digest }}"
