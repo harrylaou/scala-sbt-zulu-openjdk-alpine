@@ -21,7 +21,7 @@ RUN \
 
 RUN \
   echo "$SCALA_VERSION $SBT_VERSION" && \
-  apk add --no-cache bash curl bc ca-certificates && \
+  apk add --no-cache bash curl bc ca-certificates git && \
   update-ca-certificates && \
   scala -version && \
   scalac -version && \
