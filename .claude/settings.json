@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "WebFetch(domain:hub.docker.com)",
+      "WebFetch(domain:github.com)",
+      "Bash(mkdir:*)",
+      "Bash(yamllint:*)",
+      "Bash(cat:*)",
+      "Bash(mv:*)",
+      "Bash(test:*)",
+      "Bash(python3 -m json.tool:*)",
+      "mcp__sequential-thinking__sequentialthinking",
+      "mcp__gpt-codex__codex",
+      "mcp__asana__asana_get_task",
+      "WebFetch(domain:www.playframework.com)",
+      "WebFetch(domain:tapir.softwaremill.com)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
